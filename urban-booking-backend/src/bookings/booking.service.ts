@@ -34,7 +34,7 @@ export class BookingService {
 
     // Check if the slot is already booked
     const existingBooking = await this.bookingRepo.findOne({
-     where: { slotId: Number(slotId) },
+      where: { slotId: Number(slotId) },
 
       relations: ["slot"],
     });
