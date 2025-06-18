@@ -1,4 +1,6 @@
 import { Module } from "@nestjs/common";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { Carpenter } from "./carpenter/entities/carpenter.entity";
 import { Slot } from "./slots/entities/slot.entity";
@@ -14,17 +16,22 @@ import { BookingController } from "./bookings/booking.controller";
   imports: [
     TypeOrmModule.forRoot({
       type: "postgres",
-      host: "localhost", // 👈 or your remote host
+      host: "localhost", //remote host
       port: 5432,
       username: "postgres", //DB username
       password: "nitish", //DB password
-      database: "urban_booking", // 👈 replace with your DB name
+      database: "urban_booking", //DB name
       entities: [Carpenter, Slot, Booking],
       synchronize: true, // ⚠️ Auto-create tables. Turn off in production.
     }),
     TypeOrmModule.forFeature([Carpenter, Slot, Booking]),
   ],
-  controllers: [CarpentersController, SlotsController, BookingController],
-  providers: [CarpentersService, SlotsService, BookingService],
+  controllers: [
+    CarpentersController,
+    SlotsController,
+    BookingController,
+    AppController,
+  ],
+  providers: [CarpentersService, SlotsService, BookingService, AppService],
 })
 export class AppModule {}
