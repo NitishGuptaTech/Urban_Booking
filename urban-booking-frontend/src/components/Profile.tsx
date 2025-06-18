@@ -17,10 +17,10 @@ const Profile: React.FC = () => {
   const [profile, setProfile] = useState({
     name: 'Nitish Gupta',
     email: 'Nitish.wendor@hmail.com',
-    phone: '9485748750',
+    phone: '1234567890',
     address: 'Bahadurgarh, Haryana, India',
     photo: '',
-    dob: '1999-10-15',
+    dob: '2001-10-02',
     gender: 'Male',
   });
 

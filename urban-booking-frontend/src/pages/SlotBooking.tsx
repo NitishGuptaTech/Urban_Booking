@@ -1,4 +1,3 @@
-// SlotBooking.tsx
 import React, { useEffect, useState } from 'react';
 import SlotCard from '../components/SlotCard';
 import axios from 'axios';
@@ -37,7 +36,15 @@ const SlotBooking: React.FC = () => {
 
   useEffect(() => {
     axios.get('http://localhost:3000/slots/available')
-      .then((res) => setSlots(res.data))
+      .then((res) => {
+        const bookedSlots = JSON.parse(localStorage.getItem('bookedSlots') || '[]');
+        const bookedIds = bookedSlots.map((s: Slot) => s.id);
+        const filteredSlots = res.data.map((slot: Slot) => ({
+          ...slot,
+          available: !bookedIds.includes(slot.id)
+        }));
+        setSlots(filteredSlots);
+      })
       .catch(() => toast.error('❌ Failed to load available slots.'))
       .finally(() => setLoading(false));
   }, []);
@@ -98,8 +105,7 @@ const SlotBooking: React.FC = () => {
           className={`px-6 py-3 rounded text-white font-semibold transition duration-200 shadow-md
             ${selectedSlot && !booking
               ? 'bg-blue-600 hover:bg-blue-700'
-              : 'bg-red-400 cursor-not-allowed'}
-          `}
+              : 'bg-red-400 cursor-not-allowed'}`}
         >
           {booking ? 'Booking...' : 'Confirm Booking'}
         </button>
