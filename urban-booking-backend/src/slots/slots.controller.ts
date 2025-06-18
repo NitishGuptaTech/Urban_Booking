@@ -5,6 +5,8 @@ import {
   Param,
   ParseIntPipe,
   Body,
+  HttpCode,
+  HttpStatus,
 } from "@nestjs/common";
 import { SlotsService } from "./slots.services";
 
@@ -18,8 +20,14 @@ export class SlotsController {
   }
 
   @Post("book/:id")
+  @HttpCode(HttpStatus.OK)
   bookSlot(@Param("id", ParseIntPipe) id: number) {
     return this.slotsService.bookSlot(id);
+  }
+
+  @Post("cancel")
+  cancelSlot(@Body() body: { slotId: number }) {
+    return this.slotsService.cancelSlot(body.slotId);
   }
 
   @Post("create")

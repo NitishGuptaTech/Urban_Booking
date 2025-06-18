@@ -1,11 +1,11 @@
-import { IsUUID, IsNotEmpty } from "class-validator";
+import { IsNumber, IsNotEmpty } from "class-validator";
 
 export class BookSlotDto {
-  @IsUUID()
+  @IsNumber()
   @IsNotEmpty()
-  slotId: string;
+  slotId: number;
 
-  @IsUUID()
+  @IsNumber()
   @IsNotEmpty()
   userId: number;
 }

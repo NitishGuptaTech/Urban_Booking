@@ -1,88 +1,99 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaTimesCircle, FaCheckCircle, FaUserTie } from 'react-icons/fa';
+
+type Slot = {
+  id: number;
+  startTime: string;
+  endTime: string;
+  time?: string;
+  carpenter?: {
+    id: number;
+    name: string;
+  };
+};
 
 const ReviewBooking: React.FC = () => {
-  const navigate = useNavigate();
-  const storedSlot = localStorage.getItem('selectedSlot');
-  const selectedSlot = storedSlot ? JSON.parse(storedSlot) : null;
-
+  const [bookedSlots, setBookedSlots] = useState<Slot[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const navigate = useNavigate();
 
-  const handleConfirm = () => {
-    setIsProcessing(true);
-    toast.success('✅ Booking confirmed successfully!');
-    localStorage.removeItem('selectedSlot');
-    setTimeout(() => {
-      navigate('/');
-    }, 1500);
-  };
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem('bookedSlots') || '[]');
+    setBookedSlots(stored);
+  }, []);
 
-  const handleCancel = async () => {
-    if (!selectedSlot) return;
-
+  const handleCancel = async (slotId: number) => {
     setIsProcessing(true);
     try {
-      await axios.post('http://localhost:3000/cancel', { slotId: selectedSlot.id });
+      await axios.post('http://localhost:3000/slots/cancel', { slotId });
+
+      const updated = bookedSlots.filter((s) => s.id !== slotId);
+      localStorage.setItem('bookedSlots', JSON.stringify(updated));
+      setBookedSlots(updated);
+
       toast.info('ℹ️ Booking cancelled.');
-      localStorage.removeItem('selectedSlot');
-      setTimeout(() => navigate('/'), 1500);
-    } catch {
-      toast.error('❌ Failed to cancel booking.');
+      setTimeout(() => navigate('/SlotBooking'), 1500);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      toast.error('❌ Failed to cancel slot. Try again.');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  if (!selectedSlot) {
+  if (bookedSlots.length === 0) {
     return (
-      <div className="p-30 text-center text-red-600 font-semibold text-lg">
-        ⚠️ No slot selected. Please book a slot first.
+      <div className="p-10 text-center text-red-600 font-semibold text-lg">
+        ⚠️ No booked slots to show. Please book a slot first.
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="max-w-md w-full p-6 bg-white shadow-lg rounded-lg border border-gray-200 transition-all duration-300">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-blue-700 mb-2">Review Your Booking</h2>
-          <p className="text-gray-600">Please confirm or cancel your selected time slot below.</p>
-        </div>
+    <div className="min-h-screen bg-gray-50 py-16 px-4">
+      <h2 className="text-3xl font-bold text-center text-blue-800 mb-8">
+        ✅ Your Booked Slots
+      </h2>
 
-        <div className="bg-blue-50 p-4 rounded-md mb-6 border border-blue-200">
-          <p className="text-md text-blue-700 font-medium text-center">
-            🕒 <strong>Selected Slot:</strong> {selectedSlot.time}
-          </p>
-        </div>
-
-        <div className="flex justify-between gap-4">
-          <button
-            onClick={handleCancel}
-            disabled={isProcessing}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded transition 
-              ${isProcessing ? 'bg-red-300 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'} text-white`}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        {bookedSlots.map((slot) => (
+          <div
+            key={slot.id}
+            className="bg-white shadow-md hover:shadow-lg transition-shadow border border-blue-200 rounded-xl p-6 text-center relative"
           >
-            <FaTimesCircle />
-            Cancel
-          </button>
+            {/* Confirmed badge */}
+            <div className="absolute top-2 right-2 flex items-center text-green-600 font-medium text-sm">
+              <FaCheckCircle className="mr-1" />
+              Confirmed
+            </div>
 
-          <button
-            onClick={handleConfirm}
-            disabled={isProcessing}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded transition 
-              ${isProcessing ? 'bg-green-300 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'} text-white`}
-          >
-            <FaCheckCircle />
-            Confirm
-          </button>
-        </div>
+            <p className="text-blue-700 text-lg font-semibold mb-2">
+              🕒 {slot.time || `${slot.startTime} - ${slot.endTime}`}
+            </p>
 
-        <ToastContainer position="top-center" />
+            {/* Show Carpenter Name */}
+            <p className="text-gray-600 flex justify-center items-center gap-2 text-sm mb-4">
+              <FaUserTie />
+              {slot.carpenter?.name || 'Carpenter Not Assigned'}
+            </p>
+
+            <button
+              disabled={isProcessing}
+              onClick={() => handleCancel(slot.id)}
+              className={`mt-2 px-4 py-2 rounded text-white flex items-center justify-center gap-2 mx-auto
+              ${isProcessing ? 'bg-red-300 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'}`}
+            >
+              <FaTimesCircle />
+              Cancel Slot
+            </button>
+          </div>
+        ))}
       </div>
+
+      <ToastContainer position="top-center" />
     </div>
   );
 };
