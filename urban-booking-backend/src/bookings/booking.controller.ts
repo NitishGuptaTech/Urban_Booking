@@ -8,6 +8,6 @@ export class BookingController {
 
   @Post()
   async bookSlot(@Body() bookSlotDto: BookSlotDto) {
-    return this.bookingService.bookSlot(bookSlotDto);
+    return await this.bookingService.bookSlot(bookSlotDto);
   }
 }

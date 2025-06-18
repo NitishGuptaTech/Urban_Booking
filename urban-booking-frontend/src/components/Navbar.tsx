@@ -1,12 +1,24 @@
-import { Link } from "react-router-dom";
+import { Link} from "react-router-dom";
 import { Menu } from "@headlessui/react";
 import { ChevronDownIcon, UserCircleIcon } from "@heroicons/react/24/outline";
+import { toast } from "react-toastify";
 
 const Navbar: React.FC = () => {
+
+  const handleLogout = () => {
+    toast.info("🔒 Logout feature coming soon. Nitish is working on it...", {
+      position: "top-center",
+      autoClose: 3000,
+    });
+
+    // Optional: navigate to a 'Coming Soon' page
+    // navigate("/comingsoon");
+  };
+
   return (
     <nav className="bg-blue-600 text-white shadow-md fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        
+
         {/* Left: Logo */}
         <div className="flex items-center space-x-2">
           <img
@@ -19,14 +31,14 @@ const Navbar: React.FC = () => {
 
         {/* Center: Navigation */}
         <div className="hidden md:flex space-x-6 text-sm font-medium">
-          <Link to="/Home" className=" hover:text-red-500">Home</Link>
-          <Link to="/SlotBooking" className=" hover:text-red-500">Bookings</Link>
-          <Link to="/ReviewBooking" className=" hover:text-red-500">Review</Link>
+          <Link to="/Home" className="hover:text-red-300 transition">Home</Link>
+          <Link to="/SlotBooking" className="hover:text-red-300 transition">Bookings</Link>
+          <Link to="/ReviewBooking" className="hover:text-red-300 transition">Review</Link>
         </div>
 
         {/* Right: Profile Dropdown */}
         <Menu as="div" className="relative">
-          <Menu.Button className="flex items-center space-x-1 hover:text-red-500">
+          <Menu.Button className="flex items-center space-x-1 hover:text-red-300 transition">
             <UserCircleIcon className="w-6 h-6" />
             <ChevronDownIcon className="w-4 h-4" />
           </Menu.Button>
@@ -46,7 +58,7 @@ const Navbar: React.FC = () => {
             <Menu.Item>
               {({ active }) => (
                 <button
-                  onClick={() => alert("Logout clicked")}
+                  onClick={handleLogout}
                   className={`block w-full text-left px-4 py-2 text-sm ${
                     active ? "bg-gray-100" : ""
                   }`}

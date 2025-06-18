@@ -15,7 +15,7 @@ export class Slot {
   id: number;
 
   @Column()
-  time: string;
+  time: string; // Must be set before save
 
   @Column({ default: true })
   available: boolean;
