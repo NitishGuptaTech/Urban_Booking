@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -13,16 +14,21 @@ type Slot = {
     id: number;
     name: string;
   };
+  isConfirmed?: boolean;
 };
 
 const ReviewBooking: React.FC = () => {
   const [bookedSlots, setBookedSlots] = useState<Slot[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [now, setNow] = useState(Date.now());
   const navigate = useNavigate();
 
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem('bookedSlots') || '[]');
     setBookedSlots(stored);
+
+    const interval = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleCancel = async (slotId: number) => {
@@ -42,6 +48,19 @@ const ReviewBooking: React.FC = () => {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleConfirm = (slotId: number) => {
+    const updatedSlots = bookedSlots.map((slot) =>
+      slot.id === slotId ? { ...slot, isConfirmed: true } : slot
+    );
+    setBookedSlots(updatedSlots);
+    localStorage.setItem('bookedSlots', JSON.stringify(updatedSlots));
+    toast.success('✅ Booking confirmed successfully!');
+  };
+
+  const isExpired = (endTime: string) => {
+    return new Date(endTime).getTime() < now;
   };
 
   if (bookedSlots.length === 0) {
@@ -65,29 +84,50 @@ const ReviewBooking: React.FC = () => {
             className="bg-white shadow-md hover:shadow-lg transition-shadow border border-blue-200 rounded-xl p-6 text-center relative"
           >
             {/* Confirmed badge */}
-            <div className="absolute top-2 right-2 flex items-center text-green-600 font-medium text-sm">
-              <FaCheckCircle className="mr-1" />
-              Confirmed
-            </div>
+            {slot.isConfirmed && !isExpired(slot.endTime) && (
+              <div className="absolute top-2 right-2 flex items-center text-green-600 font-medium text-sm">
+                <FaCheckCircle className="mr-1" />
+                Confirmed
+              </div>
+            )}
+
+            {isExpired(slot.endTime) && (
+              <div className="absolute top-2 right-2 flex items-center text-red-600 font-medium text-sm">
+                Expired
+              </div>
+            )}
 
             <p className="text-blue-700 text-lg font-semibold mb-2">
               🕒 {slot.time || `${slot.startTime} - ${slot.endTime}`}
             </p>
 
-            {/* Show Carpenter Name */}
             <p className="text-gray-600 flex justify-center items-center gap-2 text-sm mb-4">
               <FaUserTie />
               {slot.carpenter?.name || 'Carpenter Not Assigned'}
             </p>
 
             <button
-              disabled={isProcessing}
+              disabled={isProcessing || isExpired(slot.endTime)}
               onClick={() => handleCancel(slot.id)}
               className={`mt-2 px-4 py-2 rounded text-white flex items-center justify-center gap-2 mx-auto
-              ${isProcessing ? 'bg-red-300 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'}`}
+              ${isProcessing || isExpired(slot.endTime)
+                ? 'bg-red-300 cursor-not-allowed'
+                : 'bg-red-500 hover:bg-red-600'}`}
             >
               <FaTimesCircle />
               Cancel Slot
+            </button>
+
+            <button
+              onClick={() => handleConfirm(slot.id)}
+              disabled={slot.isConfirmed || isExpired(slot.endTime)}
+              className={`mt-3 px-4 py-2 rounded text-white flex items-center justify-center gap-2 mx-auto
+              ${slot.isConfirmed || isExpired(slot.endTime)
+                ? 'bg-green-300 cursor-not-allowed'
+                : 'bg-green-500 hover:bg-green-600'}`}
+            >
+              <FaCheckCircle />
+              {slot.isConfirmed ? 'Confirmed' : 'Confirm Slot'}
             </button>
           </div>
         ))}
